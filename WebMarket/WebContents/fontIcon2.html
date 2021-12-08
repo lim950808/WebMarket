@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>폰트 아이콘 사용법(FontAwesome, XEICON)</title>
+<style>
+	@import url('https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+	.box{
+		border: 1px solid #000;
+		width: 100px;
+		height: 100px;
+		position: relative;
+	}
+	.box:before{
+		content: '\f0c9';
+		font-family: fontawesome;
+		position: absolute;
+		right: 0;
+		top: 0;
+		background-color: black;
+		color: #fff;
+		width: 30px;
+		height: 30px;
+		border-radius: 50%;
+		text-align: center;
+		line-height: 30px;
+	}
+</style>
+</head>
+<body>
+	<div class="box"></div>
+	<i class="fa fa-bar-chart"></i>
+</body>
+</html>
