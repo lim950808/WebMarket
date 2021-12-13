@@ -52,4 +52,13 @@ xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.
   	<url-pattern>/*</url-pattern>
   </filter-mapping>
   
+  <servlet>
+  	<servlet-name>BoardController</servlet-name>
+  	<servlet-class>mvc.controller.BoardController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>BoardController</servlet-name>
+  	<url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+  
 </web-app>

@@ -141,7 +141,7 @@ function confirm(){
               <label class="col-sm-2">아이디</label>
               <div class="col-sm-3">
                    <input name="id" type="text" class="form-control" placeholder="아이디" required>
-                    <input type="button" value="아이디 중복검사"  class="btn btn-success" onclick="idChk()">
+                   <input type="button" value="아이디 중복검사"  class="btn btn-success" onclick="idChk()">
               </div>
         </div>
         
