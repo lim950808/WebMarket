@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
-<% String name = (String)request.getAttribute("name")==null?"":(String)request.getAttribute("name"); %>
+<% /* 콘트롤러에서 db에서 조회한 id에 해당하는 name을 request에 실어서 전달한 name을 받음 */
+String name = (String)request.getAttribute("name")==null?"":(String)request.getAttribute("name"); %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,7 +35,7 @@
 			<div class="form-group row">
 				<label class="col-sm-2 control-label">내용</label>
 				<div class="col-sm-8">
-					<textarea rows="5" cols="50" class="form-control" placeholder="content"></textarea>
+					<textarea rows="5" cols="50" class="form-control" placeholder="content" name="content"></textarea>
 				</div>
 			</div>
 			
