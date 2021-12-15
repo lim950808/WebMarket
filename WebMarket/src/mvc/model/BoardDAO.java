@@ -171,4 +171,29 @@ public class BoardDAO {
 		}
 		return x;
 	} //getListCount() 끝.
+	
+	//글 번호에 해당하는 글 정보 얻기 메소드
+	public BoardDTO getBoardByNum(int num, int pageNum) {
+		BoardDTO board = new BoardDTO();
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		String sql = "select * from board where num = ?"; //글 번호에 해당하는 글 정보 얻기
+		
+		try {
+			
+		}catch(Exception e) {
+			System.out.println("에러: " + e); //e.toString() 자동 호출
+		}finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+				if(rs != null) rs.close();
+			}catch(Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+		return board;
+	} //getBoardByNum() 끝.
 }

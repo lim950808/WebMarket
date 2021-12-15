@@ -75,6 +75,7 @@ public class BoardController extends HttpServlet {
 			rd.forward(request, response);
 		}else if(command.equals("/BoardViewAction.do")) {//게시글 상세보기 요청
 			//게시글 리스트에서 글 번호에 해당하는 게시글 정보를 DB에서 얻기
+			requestBoardView(request);
 			RequestDispatcher rd = request.getRequestDispatcher("/BoardView.do");//상세페이지 보기 요청
 			rd.forward(request, response);
 		}else if(command.equals("/BoardView.do")) {//상세페이지 용청
@@ -93,6 +94,25 @@ public class BoardController extends HttpServlet {
 		}
 	}
     
+	//상세 글 페이지 가져오기
+	private void requestBoardView(HttpServletRequest request) {
+		//DB억세스 객체 생성
+		BoardDAO dao = BoardDAO.getInstance();
+		//파라미터로 넘어온 글 번호와 페이지 번호(리스트로 다시 이동시 해당 페이지 블럭으로 이동처리하기 위해)
+		int num = Integer.parseInt(request.getParameter("num"));
+		int pageNum = Integer.parseInt(request.getParameter("pageNum"));
+		
+		//개별 속성 변수를 묶어서 처리할 DTO 객체 생성
+		BoardDTO board = new BoardDTO();
+		//DAO에 상세 글 번호와 페이지 번호를 넘겨서 DB로부터 얻은 글 정보를 다시 받음.
+		board = dao.getBoardByNum(num, pageNum);
+		
+		//상세 글정보를 상세페이지로 전달하기 위해 request에 세팅
+		request.setAttribute("num", num); //글 번호 - autoBoxing(기본타입-래퍼객체로 자동 형변환)
+		request.setAttribute("page", pageNum); //페이지 번호
+		request.setAttribute("board", board); //글 정보
+	}
+
 	//등록된 글 목록 가져오기
 	private void requestBoardList(HttpServletRequest request) {
 		//DB 억세스 객체 생성

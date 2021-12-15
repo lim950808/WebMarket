@@ -54,7 +54,7 @@ function checkForm(){
        %> 	    
         <tr>
          <td><%=notice.getNum()%></td>
-         <td><%=notice.getSubject() %></td>
+         <td><a href="./BoardViewAction.do?num=<%=notice.getNum()%>&pageNum=<%pageNum%>"><%=notice.getSubject() %></a></td>
          <td><%=notice.getRegist_day() %></td>
          <td><%=notice.getHit() %></td>
          <td><%=notice.getName() %></td>
@@ -69,12 +69,12 @@ function checkForm(){
    <nav aria-label="...">
    <ul class="pagination justify-content-center"><!-- 페이지 숫자 가운데 정렬 -->
   
-   <c:if test="${startPage-1==1 }">
+   <c:if test="${startPage-1 == 1}">
    <li class="page-item  disabled"> 
      <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${startPage-1}"/>">Previous</a> 
     </li>
    </c:if>
-   <c:if test="${startPage-1>1 }">
+   <c:if test="${startPage-1 > 1}">
     <li class="page-item"> 
      <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${startPage-1}"/>">Previous</a> 
     </li>
@@ -82,7 +82,7 @@ function checkForm(){
       
      <c:forEach var="i" begin="<%=startPage%>" end="<%=endPage%>">
          <c:choose>
-            <c:when test="${pageNum==i }">
+            <c:when test="${pageNum == i}">
                  <li class="page-item active" aria-current="page">
                     <a class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${i}"/>">${i}</a>
                   </li>
