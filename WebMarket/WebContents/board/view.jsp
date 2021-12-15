@@ -14,8 +14,8 @@
 <meta charset="UTF-8">
 <title>글 내용 보기</title>
 <script>
-function confirmDelete(num,pageNum){
-	 location.href="./BoardDeleteAction.do?num="+num+"&pageNum="+pageNum;
+function confirmDelete(num,pageNum,items,text){
+ location.href="./BoardDeleteAction.do?num="+num+"&pageNum="+pageNum+"&items="+items+"&text="+text;
 }
 </script>
 </head>
@@ -29,7 +29,7 @@ function confirmDelete(num,pageNum){
 
 <div class="container">
     <form name="newUpdate" 
-          action="BoardUpdateAction.do?num=<%=notice.getNum()%>&pageNum=<%=nowPage%>"
+          action="BoardUpdateAction.do?num=<%=notice.getNum()%>&pageNum=<%=nowPage%>&items=${items}&text=${text}"
           class="form-horizontal" method="post" >
 <%--          <input name="num" type="hidden" value="<%=notice.getNum()%>"> 
          <input name="pageNum" type="hidden" value="<%=nowPage%>"> --%>
@@ -63,7 +63,7 @@ function confirmDelete(num,pageNum){
         </button>
              <input type="submit" class="btn btn-success" value="수정">
             </c:if>
-            <a href="./BoardListAction.do?pageNum=<%=nowPage%>" class="btn btn-primary">목록</a>
+            <a href="./BoardListAction.do?pageNum=<%=nowPage%>&items=${items}&text=${text}" class="btn btn-primary">목록</a>
         </div>
     </div>
     </form>
@@ -87,7 +87,7 @@ function confirmDelete(num,pageNum){
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">아니오</button>
-        <button type="button" class="btn btn-primary" onclick="confirmDelete('<%=notice.getNum()%>','<%=nowPage%>')">예</button>
+        <button type="button" class="btn btn-primary" onclick="confirmDelete('<%=notice.getNum()%>','<%=nowPage%>','${items}','${text}')">예</button>
       </div>
     </div>
   </div>
