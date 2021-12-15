@@ -3,6 +3,7 @@ package mvc.model;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -85,13 +86,19 @@ public class BoardDAO {
 	} //insertBoard() 메소드 끝.
 	
 	//board테이블의 레코드 가져오기
-	public List<BoardDTO> getBoardList(int pageNum, int limit) {
+	public List<BoardDTO> getBoardList(int pageNum, int limit, String items, String text) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		
-		String name = null;
-		String sql = "select * from board order by num desc"; //최근 등록글이 먼저 나오도록 처리
+		String sql = "";
+		
+		if(items==null && text==null) //검색조건이 파라미터로 넘어오지 않은 경우
+			sql = "select * from board order by num desc";
+		else //검색조건이 파라미터로 넘어온 경우
+			sql = "select * from board where " + items + " like '%" + text + "%' order by num desc"; //최근 등록글이 먼저 나오도록 처리
+		
+		System.out.println("sql: " + sql);
 		
 		int total_record = getListCount();
 		int start = (pageNum - 1) * limit; //예)1페이지 -> start=0; 4페이지 -> start=(4-1)*5 => 15
@@ -182,7 +189,21 @@ public class BoardDAO {
 		String sql = "select * from board where num = ?"; //글 번호에 해당하는 글 정보 얻기
 		
 		try {
+			conn = DBConnection.getConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, num);
+			rs = pstmt.executeQuery();
 			
+			if(rs.next()) {
+				board.setNum(rs.getInt(1));
+				board.setId(rs.getString(2));
+				board.setName(rs.getString(3));
+				board.setSubject(rs.getString(4));
+				board.setContent(rs.getString(5));
+				board.setRegist_day(rs.getString(6));
+				board.setHit(rs.getInt(7));
+				board.setIp(rs.getString(8));
+			}
 		}catch(Exception e) {
 			System.out.println("에러: " + e); //e.toString() 자동 호출
 		}finally {
@@ -196,4 +217,94 @@ public class BoardDAO {
 		}
 		return board;
 	} //getBoardByNum() 끝.
+	
+	//글 내용 수정 처리
+	public void updateBoard(BoardDTO board) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		String sql = "update board set id=?, name=?, subject=?, content=?, regist_day=?, ip=? where num=?";
+		
+		try {
+			//db연결
+			conn = DBConnection.getConnection();
+			pstmt = conn.prepareStatement(sql);
+			//값 설정
+			pstmt.setString(1, board.getId());
+			pstmt.setString(2, board.getName());
+			pstmt.setString(3, board.getSubject());
+			pstmt.setString(4, board.getContent());
+			pstmt.setString(5, board.getRegist_day());
+			pstmt.setString(6, board.getIp());
+			pstmt.setInt(7, board.getNum());
+			//db저장처리
+			pstmt.executeUpdate();
+		}catch(Exception e) {
+			System.out.println("에러: " + e);
+		}finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			}catch(Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	} //updateBoard() 끝.
+	
+	//조회수 증가
+	public void updateHit(int num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		String sql = "update board set hit=hit+1 where num = ?";
+		
+		try {
+			conn = DBConnection.getConnection();
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, num);
+			pstmt.executeUpdate();
+		}catch(Exception e) {
+			System.out.println("에러: " + e);
+		}finally {
+			try {
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			}catch(Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	} //updateHit() 끝.
+	
+	public void deleteBoard(int num) {
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		
+		String sql = "delete from board where num = ?";
+		
+		try {
+			conn = DBConnection.getConnection();
+			conn.setAutoCommit(false); //수동 transaction 처리
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, num);
+			pstmt.executeUpdate();
+			conn.commit(); //commit 처리
+		}catch(Exception e) {
+			try {
+				conn.rollback(); //rollback 처리
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("에러: " + e);
+		}finally {
+			try {
+				conn.setAutoCommit(true); //자동 transaction으로 처리
+				if(pstmt != null) pstmt.close();
+				if(conn != null) conn.close();
+			}catch(Exception e) {
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	} //deleteBoard() 끝.
+	
+	
 }

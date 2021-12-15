@@ -48,7 +48,6 @@ String name = (String)request.getAttribute("name")==null?"":(String)request.getA
 		</form>
 		<hr>
 	</div>
-	
 	<%@ include file="../footer.jsp" %>
 </body>
 </html>
