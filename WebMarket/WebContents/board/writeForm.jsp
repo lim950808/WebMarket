@@ -18,7 +18,7 @@
       <div class="form-group row">
         <label class="col-sm-2 control-label">성명</label>
         <div class="col-sm-3">
-              <!--${}의 속성값은 자동 형변환처리 및 null 처리, String 인 경우 빈 문자열("")로 처리 -->
+              <%-- ${}의 속성값은 자동 형변환처리 및 null 처리, String 인 경우 빈 문자열("")로 처리 --%>
            <input name="name" class="form-control" value="${name}" placeholder="name">
         </div>
       </div>

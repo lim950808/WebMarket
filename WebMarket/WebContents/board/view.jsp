@@ -43,7 +43,7 @@ function confirmDelete(num,pageNum,items,text){
         <label class="col-sm-2 control-label">내용</label>
         <div class="col-sm-8" style="word-break:break-all;">
             <textarea rows="5" cols="50" name="content"
-               class="form-control">${board.content}"></textarea>
+               class="form-control">${board.content}</textarea>
         </div>
     </div>
     <div class="form-group row">

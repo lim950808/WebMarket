@@ -11,4 +11,15 @@
      factory="org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory"
      maxActive="500"
   />
+  <Resource 
+     name ="jdbc/webmarketOracle"
+     auth ="Container"
+     type="javax.sql.DataSource"
+     driverClass="oracle.jdbc.driver.OracleDriver"
+     url="jdbc:oracle:thin:@localhost:1521:xe"
+     username="root"
+     password="1234"
+     factory="org.apache.tomcat.dbcp.dbcp2.BasicDataSourceFactory"
+     maxActive="500"
+  />
 </Context>
