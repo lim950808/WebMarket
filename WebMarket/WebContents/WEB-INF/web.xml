@@ -55,6 +55,13 @@ xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.
   <servlet>
   	<servlet-name>BoardController</servlet-name>
   	<servlet-class>mvc.controller.BoardController</servlet-class>
+  	<init-param>
+  		<param-name>configFile</param-name>
+  		<param-value>
+  			/WEB-INF/commandHandlerURI.properties
+  		</param-value>
+  	</init-param>
+  	<load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
   	<servlet-name>BoardController</servlet-name>

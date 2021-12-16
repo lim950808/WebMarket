@@ -1,10 +1,16 @@
 package mvc.controller;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import mvc.command.Command;
 import mvc.model.BoardDAO;
 import mvc.model.BoardDTO;
 
@@ -21,6 +28,58 @@ public class BoardController extends HttpServlet {
 
 	//게시글 페이지당 조회결과 건수 상수 선언
 	static final int LISTCOUNT = 10;
+	
+	//클래스들을 Key는 command이고 객체는 Command타입으로 저장하기위한 map생성 
+	private Map<String,Command> commandMap = new HashMap<>();
+
+	//tomcat 기동시 command객체들을 만들어서 commandMap에 저장
+	@Override
+	public void init() throws ServletException {
+	 //web.xml의 init-param값 읽어 처리
+		String configFile = getInitParameter("configFile");
+		System.out.println("configFile:"+configFile);
+		//<문자열,문자열> 값 읽기 <- properties
+		Properties prop = new Properties();
+		//File system상의 물리적인 경로
+		String configFilePath = getServletContext().getRealPath(configFile);
+		System.out.println("configFilePath:"+configFilePath);
+		//File system의 properties파일과 문자단위의 입력 스트림 경로 설정(객체 생성)
+	    try(FileReader fis =new FileReader(configFilePath)) {
+	    	   //properties객체로 저장하기
+	    	prop.load(fis);
+	    /*  System.out.println(prop.get("/BoardListAction.do"));	
+	      Set keySet = prop.keySet();
+	      Iterator itor = keySet.iterator();
+	      while(itor.hasNext()) {
+	    	  String key = (String)itor.next();
+	    	  System.out.println(key+"="+prop.get(key));
+	      } */
+	      //propteries파이로부터 읽어들인 정보를 추출하여 객체 생성
+	      Iterator keyItor = prop.keySet().iterator();
+	      while(keyItor.hasNext()) {
+	    	  String command =(String)keyItor.next();
+	    	  String className = prop.getProperty(command);
+	    	  Class<?> action = Class.forName(className);
+	    	  //properties의 value에 해당하는 문자열로 객체 생성
+	    	  Command actionCommand=(Command) action.newInstance();// new mvc.command.BoardUpdateAction();
+	    	  commandMap.put(command, actionCommand);  
+	      }
+	      /*
+	      System.out.println("저장된 객체수:"+commandMap.size());
+	      
+	      Iterator it = commandMap.keySet().iterator();
+	      System.out.println("commandMap에 저장된 객체 정보 출력");
+	      while(it.hasNext()) {
+	    	  String c = (String)it.next();
+	    	  Command a = commandMap.get(c);
+	    	  System.out.println(c+"="+a.getClass().getName());
+	      }
+	      */
+	    }catch(Exception e) {
+	    	System.out.println("에러:"+e.getMessage());
+	    }
+	}
+	
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
 			throws ServletException, IOException {
@@ -32,30 +91,21 @@ public class BoardController extends HttpServlet {
 			throws ServletException, IOException {
 	   //문자셋 설정
 	   request.setCharacterEncoding("utf-8");
-		
-	   String requestURL = request.getRequestURL().toString();	
-       String requestURI = request.getRequestURI();
-       String contextPath = request.getContextPath();
-       String command = requestURI.substring(contextPath.length());
-       String queryString 
-         = request.getQueryString()==null?"":request.getQueryString();//get방식일때 쿼리스트링 얻기
-       
-       System.out.println("requestURL:"+requestURL);
-       System.out.println("requestURI:"+requestURI);
-       System.out.println("contextPath:"+contextPath);
-       System.out.println("command:"+command);
-       System.out.println("queryString:"+queryString);
        
        //응답으로 생성되는 객체의 문서타입 설정
        response.setContentType("text/html;charset=utf-8");
        response.setCharacterEncoding("utf-8");
        
+       action(request,response);
+  /*     
+       RequestDispatcher rd=null;
+       
        //URI 코멘드 요청에 따른 로직 분기 처리 후, 응답(view)페이지로 이동 처리
        if(command.equals("/BoardListAction.do")) {//등록된 게시글 목록 페이지 출력 요청
            //게시글 리스트 얻기 메소드
     	   requestBoardList(request);
-           RequestDispatcher rd = request.getRequestDispatcher("./board/list.jsp");
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("./board/list.jsp");
+         
        }else if(command.equals("/BoardWriteForm.do")) {//새 게시글 등록 페이지 요청
     	      //세션으로 부터 로그인 아이디 얻기
     	       HttpSession session = request.getSession();
@@ -67,37 +117,64 @@ public class BoardController extends HttpServlet {
     	      }
               //로그인 후 게시글 등록 페이지로 이동했는지, 로그인 한 작성자 이름 얻기
     	       requestLoginName(request); 
-               RequestDispatcher rd = request.getRequestDispatcher("./board/writeForm.jsp");
-               rd.forward(request, response);
+               rd = request.getRequestDispatcher("./board/writeForm.jsp");
        }else if(command.equals("/BoardWriteAction.do")) {//새 게시글 등록 프로세스 페이지 
     	     //DB에 신규등록 게시글 저장
     	   requestBoardWrite(request);
-           RequestDispatcher rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 등록후 게시글 리스트로 이동
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 등록후 게시글 리스트로 이동
        }else if(command.equals("/BoardViewAction.do")) {//게시글 상세보기 요청
     	    //게시글 리스트에서 글 번호에 해당하는 게시글 정보를 DB에서 얻기 
     	   requestBoardView(request);
-           RequestDispatcher rd = request.getRequestDispatcher("/BoardView.do");//상세페이지 보기 요청
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("/BoardView.do");//상세페이지 보기 요청
        }else if(command.equals("/BoardView.do")) {//상세페이지 요청
     	 //게시글 리스트에서 글 번호에 해당하는 게시글 정보를 DB에서 얻기
     	  //조회수 증가 처리 hit = hit+1
     	   requestUpdateHit(request);
-           RequestDispatcher rd = request.getRequestDispatcher("./board/view.jsp");
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("./board/view.jsp");
        }else if(command.equals("/BoardUpdateAction.do")) {//게시글 수정 처리 요청
     	   //수정된 내용을 파라미터로 받아서 db에 수정처리
     	   requestBoardUpdate(request);
-           RequestDispatcher rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 리스트페이지로 이동
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 리스트페이지로 이동
        }else if(command.equals("/BoardDeleteAction.do")) {//게시글 삭제요청
     	   //삭제할 글 번호를 파라미터로 받아서 db에서 삭제 처리
     	   requestBoardDelete(request);
-           RequestDispatcher rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 리스트로 이동
-           rd.forward(request, response);
+           rd = request.getRequestDispatcher("/BoardListAction.do");//게시글 리스트로 이동
        }
        
-	}
+       rd.forward(request, response);
+       */
+       
+}//doGet()메소드 끝.
+	
+ //request요청을 처리하는 메소드	
+ private void action(HttpServletRequest request, 
+		             HttpServletResponse response) throws ServletException,IOException{
+	 String requestURL = request.getRequestURL().toString();	
+     String requestURI = request.getRequestURI();
+     String contextPath = request.getContextPath();
+     String command = requestURI.substring(contextPath.length());
+     String queryString 
+       = request.getQueryString()==null?"":request.getQueryString();//get방식일때 쿼리스트링 얻기
+     
+     System.out.println("requestURL:"+requestURL);
+     System.out.println("requestURI:"+requestURI);
+     System.out.println("contextPath:"+contextPath);
+     System.out.println("command:"+command);
+     System.out.println("queryString:"+queryString);
+     
+     Command commandAction = commandMap.get(command);
+     String viewPage=null;
+     try {
+    	//command에 해당하는 객체의 action메소드 실행(각 요청의 서비스 로 분기 처리) 후 이동페이지 얻기
+       viewPage=commandAction.action(request, response);
+     }catch(Throwable e) {
+    	 throw new ServletException(e);
+     }
+     if(viewPage!=null) {
+    	 RequestDispatcher dispatcher = request.getRequestDispatcher(viewPage);
+    	 dispatcher.forward(request, response);
+     }
+ }
 	
 	//선택글 삭제 처리
     private void requestBoardDelete(HttpServletRequest request) {
@@ -290,4 +367,5 @@ public class BoardController extends HttpServlet {
 		//DAO에서 DB에 저장하기 위해 메소드 호출
 		dao.insertBoard(board);
 	}
+
 }
