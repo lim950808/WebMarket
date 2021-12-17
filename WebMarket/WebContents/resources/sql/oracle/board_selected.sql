@@ -12,19 +12,13 @@ select rownum rn, board.*
   where rn >=10
   ;
   
- select * from
- (select rownum rn, board.* 
+select count(*) 
   from board 
-  where subject like '%테스트%'
-  order by num desc)
- where rn between 10 and 20
+  where subject like '%'||'테스트'||'%'
  ;
  
- select * from
- (select rownum rn, board.* 
+select count(*) 
   from board 
-  order by num desc)
- where rn between 10 and 20
  ;
  
   sql:select * from  

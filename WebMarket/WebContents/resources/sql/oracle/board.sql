@@ -10,3 +10,5 @@ CREATE TABLE board (
   PRIMARY KEY (num)
 )
 ;
+
+alter table board add attachFile varchar2(200);
