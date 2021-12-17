@@ -7,16 +7,16 @@
 <%
  Connection conn=null;
  try{
-	 String url="jdbc:mysql://localhost:3306/webmarketDB";
-	 String user="director";
-	 String password="director";
+	 String url="jdbc:oracle:thin:@localhost:1521:xe";
+	 String user="root";
+	 String password="1234";
 	 
-	 Class.forName("com.mysql.cj.jdbc.Driver");
+	 Class.forName("oracle.jdbc.driver.OracleDriver");
 	 conn=DriverManager.getConnection(url,user,password);
 	 if(conn==null){
 		 Context init = new InitialContext();
 		 DataSource ds = 
-		     (DataSource)init.lookup("java:comp/env/jdbc/webmarketDB");
+		     (DataSource)init.lookup("java:comp/env/jdbc/webmarketOracle");
 		      conn=ds.getConnection();
 	 }
 	 //if(conn != null) out.print("연결 성공");

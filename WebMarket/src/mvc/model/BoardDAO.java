@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import mvc.database.DBConnection;
+import mvc.database.DBConnectionOracle;
 
 //싱글톤 
 public class BoardDAO {
@@ -21,6 +22,7 @@ public class BoardDAO {
 	return instance;
   }
   
+  //Mysql의 회원정보 얻기
   public String getLoginNameById(String id) {
 	  Connection conn=null;
 	  PreparedStatement pstmt=null;
@@ -30,9 +32,10 @@ public class BoardDAO {
 	  String sql="select * from member where id=?";
 	  
 	  try {
+		    //Mysql 접속용 DBConnection객체 
 		    conn=DBConnection.getConnection();
 		    pstmt=conn.prepareStatement(sql);
-		    pstmt.setString(1, id);
+		    pstmt.setString(1, id); 
 		
 		    rs=pstmt.executeQuery();
 		    
@@ -57,266 +60,100 @@ public class BoardDAO {
   public void insertBoard(BoardDTO board) {
 	  Connection conn=null;
 	  PreparedStatement pstmt=null;
-	  
-	  String name=null;
-	  String sql = "insert into board(id, name, subject, content, regist_day, hit, ip) "
-	  		     + " values(?,?,?,?,?,?,?)";
-	  
+	  String sql ="insert into board values(board_seq.nextval,?,?,?,?,?,?,?)";
 	  try {
-		    //db연결
-		    conn=DBConnection.getConnection();
-		    pstmt=conn.prepareStatement(sql);
-		    //값 설정
-		    pstmt.setString(1,board.getId());
-		    pstmt.setString(2, board.getName());
-			pstmt.setString(3, board.getSubject());
-			pstmt.setString(4, board.getContent());
-			pstmt.setString(5, board.getRegist_day());
-			pstmt.setInt(6, board.getHit());
-			pstmt.setString(7, board.getIp());
-			//db저장처리
-			pstmt.executeUpdate();		  
+		     //1.Oracle dbconnection 맺기
+		     conn =DBConnectionOracle.getConnection();
+		     //2. sql 전달객체 생성
+		     pstmt = conn.prepareStatement(sql);
+		     //3. sql문의 바인딩 변수 세팅
+		     pstmt.setString(1, board.getId());
+		     pstmt.setString(2, board.getName());
+		     pstmt.setString(3, board.getSubject());
+		     pstmt.setString(4, board.getContent());
+		     pstmt.setString(5, board.getRegist_day());
+		     pstmt.setInt(6, board.getHit());
+		     pstmt.setString(7,board.getIp());
+		     
+		     //4. 쿼리 객체 전달 및 실행
+		     pstmt.executeUpdate();
 	  }catch(Exception e) {
-		  System.out.println("에러:"+e);
+		  System.out.println("에러:"+e.getMessage());
 	  }finally {
 		  try {
-                if(pstmt!=null) pstmt.close();
+			    if(pstmt!=null) pstmt.close();
 			    if(conn!=null)conn.close();
 		  }catch(Exception e) {
 			  throw new RuntimeException(e.getMessage());
 		  }
 	  }
-  }//insertBoard()메소드 끝.
+  }//insertBoard() 끝.
   
-  //board테이블의 레코드 가져오기
-  public List<BoardDTO> getBoardList(int pageNum, int limit, String items, String text){
-	  Connection conn=null;
-	  PreparedStatement pstmt=null;
-	  ResultSet rs = null;
-	  
-	  String sql="";
+public List<BoardDTO> getBoardList(int pageNum, int limit, String items, String text) {
+	List<BoardDTO> boardList = new ArrayList<BoardDTO>();
 	
-	  if((items==null && text==null)||( items.length()==0 || text.length()==0))//검색 조건이 파라미터로 넘어오지 않은 경우
-	   sql ="select * from board order by num desc";
-	  else//검색 조건이 파라미터로 넘어온 경우
-	   sql = "select * from board where "+items+" like '%"+text+"%' order by num desc";
-	  
-	  System.out.println("sql:"+sql);
-	  
-	  //전체 레코드 건수 구하기
-	  int total_record = getListCount(items,text);
-	  
-	  int start  = (pageNum-1)*limit;// 예)1페이지-> start=0; 4페이지 -> start=(4-1)*5=>15
-	  int index = start +1;//index = 1, index = 15+1 => 16
-	  System.out.println("index:"+index);
-	  //[1]1,2,3,4,5   [2]6,7,8,9,10, [3]11,12,13,14,15, [4]16,17,18,19,20
-	  
-	  //게시글 리스트 객체 생성
-	  ArrayList<BoardDTO> list = new ArrayList<>();
-	  
-	  try {
-		    conn = DBConnection.getConnection();
-		    pstmt = conn.prepareStatement(sql,
-		    		                      ResultSet.TYPE_SCROLL_INSENSITIVE, 
-		    		                      ResultSet.CONCUR_UPDATABLE);
-		    rs = pstmt.executeQuery();
-		    while(rs.absolute(index)) {
-		    	//게시글 객체 생성
-		    	BoardDTO board = new BoardDTO();
-		    	//조회된 레코드로부터 속성값 설정
-		    	board.setNum(rs.getInt("num"));
-		    	System.out.println("글번호:"+rs.getInt("num"));
-		    	board.setId(rs.getString("id"));
-		    	board.setName(rs.getString("name"));
-		    	board.setSubject(rs.getString("subject"));
-		    	board.setContent(rs.getString("content"));
-		    	board.setRegist_day(rs.getString("regist_day"));
-		    	board.setHit(rs.getInt("hit"));
-		    	board.setIp(rs.getString("ip"));
-		    	
-		    	//리스트에 추가하기
-		    	list.add(board);
-		    	
-		    	//현재 페이지에 나타날범위 내이면 index증가
-		    	if(index<(start + limit) && index <=total_record) index++;
-		    	else
-		    		break;	
-		    }
-		    return list;
-	  }catch(Exception e) {
-		  System.out.println("에러:"+e);
-		  }finally {
-			  try {
-				    if(rs!=null) rs.close(); if(pstmt!=null) pstmt.close();
-				    if(conn!=null)conn.close();
-			  }catch(Exception e) {
-				  throw new RuntimeException(e.getMessage());
-			  }
-		  }
-	  return null;
-  }//getBoardList()메소드 끝.
-  
- //전체 게시글 건 수 가져오기 
- public int getListCount(String items, String text) {
-	 Connection conn=null;
-	 PreparedStatement pstmt=null;
-	 ResultSet rs = null;
-	 
-	 //게시글 전체 건수 변수 
-	 int x =0;
-	 
-	 String sql;
-	 if((items==null && text==null)||( items.length()==0 || text.length()==0))//검색 조건이 파라미터로 넘어오지 않은 경우
-	   sql = "select count(*) from board ";
-     else//검색 조건이 파라미터로 넘어온 경우
-	   sql = "select count(*) from board where "+items+" like '%"+text+"%' ";
-	 System.out.println("getListcount_SQL:"+sql);
-	 
-	 try {
-		    conn=DBConnection.getConnection();
-		    pstmt=conn.prepareStatement(sql);
-		    rs=pstmt.executeQuery();
-		    
-		    if(rs.next()) x=rs.getInt(1);
-	  }catch(Exception e) {
-		  System.out.println("에러:"+e);
-	  }finally {
-		  try {
-			    if(rs!=null) rs.close(); if(pstmt!=null) pstmt.close();
-			    if(conn!=null)conn.close();
-		  }catch(Exception e) {
-			  throw new RuntimeException(e.getMessage());
-		  }
-	  }
-	return x;
-}//getListCount() 끝.
-  
- //글 번호에 해당하는 글 정보 얻기 메소드
- public BoardDTO  getBoardByNum(int num,int pageNum){
-	 BoardDTO board = new BoardDTO();
-	 Connection conn=null;
-	 PreparedStatement pstmt=null;
-	 ResultSet rs = null;
-	  
-	 String sql = "select * from board where num=?";//글 번호에 해당하는 글 정보 얻기
- 
-	 try {
-		    conn=DBConnection.getConnection();
-		    pstmt=conn.prepareStatement(sql);
-		    pstmt.setInt(1, num);
-		    rs=pstmt.executeQuery();
-		    
-		    if(rs.next()) {
-		    	board.setNum(rs.getInt(1));
-		    	board.setId(rs.getString(2));
-		    	board.setName(rs.getString(3));
-		    	board.setSubject(rs.getString(4));
-		    	board.setContent(rs.getString(5));
-		    	board.setRegist_day(rs.getString(6));
-		    	board.setHit(rs.getInt(7));
-		    	board.setIp(rs.getString(8));
-		    }
-	 }catch(Exception e) {
-		 System.out.println("에러:"+e);// e.toString() 자동 호출
-	 }finally {
-		  try {
-			    if(rs!=null) rs.close(); if(pstmt!=null) pstmt.close();
-			    if(conn!=null)conn.close();
-		  }catch(Exception e) {
-			  throw new RuntimeException(e.getMessage());
-		  }
-	  }
-	return board; 
- }//getBoardByNum() 끝.
- 
- //글 내용 수정 처리
-public void updateBoard(BoardDTO board) {
-	  Connection conn=null;
-	  PreparedStatement pstmt=null;
-	  
-	  String sql = "update board set id=?,name=?,subject=?,content=?,regist_day=?,ip=? where num=?";
-	  
-	  try {
-		    //db연결
-		    conn=DBConnection.getConnection();
-		    pstmt=conn.prepareStatement(sql);
-		    //값 설정
-		    pstmt.setString(1, board.getId());
-		    pstmt.setString(2, board.getName());
-			pstmt.setString(3, board.getSubject());
-			pstmt.setString(4, board.getContent());
-			pstmt.setString(5, board.getRegist_day());
-			pstmt.setString(6, board.getIp());
-			pstmt.setInt(7, board.getNum());
-			
-			//db저장처리
-			pstmt.executeUpdate();		  
-	  }catch(Exception e) {
-		  System.out.println("에러:"+e);
-	  }finally {
-		  try {
-               if(pstmt!=null) pstmt.close();
-			    if(conn!=null)conn.close();
-		  }catch(Exception e) {
-			  throw new RuntimeException(e.getMessage());
-		  }
-	  }
-}//updateBoard()끝.
-
-//조회수 증가
-public void updateHit(int num) {
- Connection conn=null;
- PreparedStatement pstmt=null;
- 
- String sql="update board set hit=hit+1 where num=?";
- try {
-	   conn=DBConnection.getConnection();
-	   pstmt = conn.prepareStatement(sql);
-	   pstmt.setInt(1, num);
-	   pstmt.executeUpdate();
- }catch(Exception e) {
-	 System.out.println("에러:"+e);
- }finally {
-	  try {
-          if(pstmt!=null) pstmt.close();
-		    if(conn!=null)conn.close();
-	  }catch(Exception e) {
-		  throw new RuntimeException(e.getMessage());
-	  }
-  }
-}//updateHit() 끝.
-
-public void deleteBoard(int num){
 	Connection conn=null;
-	PreparedStatement pstmt=null;
-	String sql="delete from board where num=?";
- try {
-	    conn=DBConnection.getConnection();
-	    conn.setAutoCommit(false);//수동 transaction처리
-	    pstmt = conn.prepareStatement(sql);
-	    pstmt.setInt(1, num);
-	    pstmt.executeUpdate();
-	    conn.commit();//commit 처리
-} catch (Exception e) {
-	 try {
-		conn.rollback(); //rollback 처리
-	} catch (SQLException e1) {
-		e1.printStackTrace();
-	}
-	 System.out.println("에러:"+e);
-}finally {
-	  try {
-		   conn.setAutoCommit(true);//자동 transaction으로 처리
-         if(pstmt!=null) pstmt.close();
-		    if(conn!=null)conn.close();
-	  }catch(Exception e) {
-		  throw new RuntimeException(e.getMessage());
-	  }
- }
-	
-}//deleteBoard()끝.
-  
-  
-  
-  
+    PreparedStatement pstmt=null;
+    ResultSet rs = null;
+    String sql="";
+    
+    if((items==null && text==null) || (items.length()==0|| text.length()==0)){
+        sql="select * from "
+           +" (select rownum rn, board.* "
+           +"  from board  "
+           +"  order by num desc) "
+           +" where rn between ? and ? ";	
+    }else {
+    	sql="select * from "
+    	   +" (select rownum rn, board.* "
+    	   +"  from board "
+    	   +"  where "+items+" like '%?%' "
+    	   +"  order by num desc) "
+    	   +" where rn between ? and ?";
+    }
+     System.out.println("sql:"+sql);
+     
+     
+     int start = (pageNum-1)*limit; //예)3페이지 -> (3-1)*10=>20, 1페이지->0
+     int index = start +1;//index,//예) 21, 1,
+     int end = index +9;//21+9=>30, 1+9=10,
+   
+    try {
+          //1.OracleDB 연결객체 생성
+    	 conn = DBConnectionOracle.getConnection();
+    	 if((items==null && text==null) || (items.length()==0|| text.length()==0)){
+    		 pstmt = conn.prepareCall(sql);
+    		 pstmt.setInt(1, index);
+    		 pstmt.setInt(2, end);
+    	 }else {
+    		 pstmt = conn.prepareCall(sql);
+    		 pstmt.setString(1, text);
+    		 pstmt.setInt(2, index);
+    		 pstmt.setInt(3, end);
+    	 }
+    	 rs = pstmt.executeQuery();
+    	 while(rs.next()) {
+
+    		 
+    		 
+    	 }
+    }catch(Exception e) {
+		  System.out.println("에러:"+e.getMessage());
+	  }finally {
+		  try {
+			    if(rs!=null) rs.close();
+			    if(pstmt!=null) pstmt.close();
+			    if(conn!=null)conn.close();
+		  }catch(Exception e) {
+			  throw new RuntimeException(e.getMessage());
+		  }
+	  } 
+	return boardList;
+}//getBoardList()메소드 끝.
+
+
+public int getListCount(int pageNum, int limit, String items, String text) {
+
+	return 0;
+}
 }

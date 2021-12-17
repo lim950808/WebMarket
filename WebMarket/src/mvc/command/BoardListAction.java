@@ -38,7 +38,7 @@ public class BoardListAction implements Command{
 			boardList = dao.getBoardList(pageNum, limit, items, text);
 			System.out.println("boardList건수:"+boardList.size());
 			//int total_record = dao.getListCount();
-			int total_record = dao.getListCount(items, text);
+			int total_record = dao.getListCount(pageNum, limit, items, text);
 			
 			//전체 글 갯수 얻기
 			int total_page;
