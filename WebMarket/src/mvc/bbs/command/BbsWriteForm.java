@@ -11,7 +11,6 @@ public class BbsWriteForm implements ActionCommand {
     	
 		 //로그인 후 게시글 등록 페이지로 이동했는지, 로그인 한 작성자 이름 얻기
 	       requestLoginName(request); 
-		
 		return "./bbs/writeForm.jsp";
 	}
 	

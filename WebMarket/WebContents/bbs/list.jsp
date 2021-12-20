@@ -8,6 +8,7 @@
 <meta charset="UTF-8">
 <script>
 function checkForm(){
+	console.log('${sessionScope.sessionId}');
 	if(${sessionScope.sessionId==null}){
 		$('#myModal').modal('show');
 	}else{
@@ -25,7 +26,7 @@ function checkForm(){
    </div>
 </div>
 <div class="container">
-  <form action="<c:url value="./BoardListAction.do"/>" method="post">  
+  <form action="<c:url value="./BbsListAction.go"/>" method="post">  
     <div>
       <div class="text-right">
              <span class="badge badge-success">전체 ${total_record}</span>
@@ -41,14 +42,14 @@ function checkForm(){
              <th>글쓴이</th>
             </tr>
      
-   <c:if test="${not empty boardlist }">
-     <c:forEach items="${boardlist}"  var="notice">          
+   <c:if test="${not empty bbslist }">
+     <c:forEach items="${bbslist}"  var="bbs">          
         <tr>
-         <td>${notice.num}</td>
-         <td><a href="./BoardViewAction.do?num=${notice.num}&pageNum=${pageNum}&items=${items}&text=${text}">${notice.subject}</a></td>
-         <td>${notice.regist_day}</td>
-         <td>${notice.hit}</td>
-         <td>${notice.name}</td>
+         <td>${bbs.num}</td>
+         <td><a href="./BbsViewAction.go?num=${bbs.num}&pageNum=${pageNum}&items=${items}&text=${text}">${bbs.subject}</a></td>
+         <td>${bbs.reg_date}</td>
+         <td>${bbs.readcount}</td>
+         <td>${bbs.writer}</td>
         </tr>        	    	       
       </c:forEach>
    </c:if>  
@@ -63,12 +64,12 @@ function checkForm(){
   
    <c:if test="${startPage-1==1 }">
    <li class="page-item  disabled"> 
-     <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${startPage-1}"/>">Previous</a> 
+     <a  class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${startPage-1}"/>">Previous</a> 
     </li>
    </c:if>
    <c:if test="${startPage-1>1 }">
     <li class="page-item"> 
-     <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${startPage-1}&items=${items}&text=${text}"/>">Previous</a> 
+     <a  class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${startPage-1}&items=${items}&text=${text}"/>">Previous</a> 
     </li>
   </c:if>
       
@@ -76,22 +77,22 @@ function checkForm(){
          <c:choose>
             <c:when test="${pageNum==i }">
                  <li class="page-item active" aria-current="page">
-                    <a class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${i}&items=${items}&text=${text}"/>">${i}</a>
+                    <a class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${i}&items=${items}&text=${text}"/>">${i}</a>
                   </li>
             </c:when>
             <c:otherwise>
-                   <li class="page-item"><a class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${i}&items=${items}&text=${text}"/>">${i}</a></li>
+                   <li class="page-item"><a class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${i}&items=${items}&text=${text}"/>">${i}</a></li>
             </c:otherwise>
          </c:choose>
      </c:forEach>
      <c:if test="${endPage+1==finalPage }">
    <li class="page-item  disabled"> 
-     <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${endPage+1}&items=${items}&text=${text}"/>">Next</a> 
+     <a  class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${endPage+1}&items=${items}&text=${text}"/>">Next</a> 
     </li>
    </c:if>
    <c:if test="${endPage+1 < finalPage }">
     <li class="page-item"> 
-     <a  class="page-link" href="<c:url value="./BoardListAction.do?pageNum=${endPage+1}&items=${items}&text=${text}"/>">Next</a> 
+     <a  class="page-link" href="<c:url value="./BbsListAction.go?pageNum=${endPage+1}&items=${items}&text=${text}"/>">Next</a> 
     </li>
   </c:if>
    </ul>
@@ -104,7 +105,7 @@ function checkForm(){
           <select name="items" class="txt">
                 <option value="subject"  <c:if test="${items=='subject'}">selected</c:if>>제목에서</option>
                 <option value="content" <c:if test="${items=='content'}">selected</c:if>>본문에서</option>
-                <option value="name" <c:if test="${items=='name'}">selected</c:if> >글쓴이에서</option>
+                <option value="writer" <c:if test="${items=='writer'}">selected</c:if> >글쓴이에서</option>
           </select>
                 <input name="text" type="search" value="${text}">
                 <input type="submit" id="btnAdd" class="btn btn-primary" value="검색">

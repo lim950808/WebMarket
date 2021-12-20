@@ -142,7 +142,7 @@ public class BoardDAO {
 				board.setName(rs.getString(4));
 				board.setSubject(rs.getString(5));
 				board.setContent(rs.getString(6));
-				board.setRegist_day(rs.getString(7));
+				//board.setRegist_day(rs.getString(7));
 				board.setHit(rs.getInt(8));
 				board.setIp(rs.getString(9));
 				

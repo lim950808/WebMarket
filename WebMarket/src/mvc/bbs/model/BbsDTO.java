@@ -1,15 +1,13 @@
 package mvc.bbs.model;
 
-import java.util.Date;
-
 public class BbsDTO {
 private int num;//자동 생성
  private String writer;//로그인 아이디
  private String subject;
  private String content;
- private Date reg_date;//등록일자
  private int readcount;//초기값 0
  private String password; //비밀번호 
+ private String reg_date;//등록일자
  private String ip;//접속ip는 request에서 구함.
  private int ref;// 답변글 그룹
  private int re_step;// ref내의 순서
@@ -40,10 +38,11 @@ public String getContent() {
 public void setContent(String content) {
 	this.content = content;
 }
-public Date getReg_date() {
+
+public String getReg_date() {
 	return reg_date;
 }
-public void setReg_date(Date reg_date) {
+public void setReg_date(String reg_date) {
 	this.reg_date = reg_date;
 }
 public int getReadcount() {
