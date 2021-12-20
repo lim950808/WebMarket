@@ -26,10 +26,10 @@ public class BoardViewAction implements Command{
 			
 			//상세 글정보를 상세 페이지로 전달 위해 request에 세팅
 			request.setAttribute("num", num);//글번호-autoBoxing(기본타입-래퍼객체로 자동형변환)
-			request.setAttribute("page", pageNum);//페이지 번호
-			request.setAttribute("board", board);//글 정보
-			request.setAttribute("items", items);//검색 타입
-			request.setAttribute("text", text);//검색어
+			request.setAttribute("page", pageNum); //페이지 번호
+			request.setAttribute("board", board); //글 정보
+			request.setAttribute("items", items); //검색 타입
+			request.setAttribute("text", text); //검색어
 
 		return "/BoardView.do";
 	}

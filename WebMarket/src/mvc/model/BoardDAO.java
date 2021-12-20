@@ -235,6 +235,7 @@ public BoardDTO getBoardByNum(int num,int pageNum) {
     		 board.setRegist_day(rs.getString(6));
     		 board.setHit(rs.getInt(7));
     		 board.setIp(rs.getString(8));
+    		 board.setAttachFile(rs.getString(9));//첨부파일 정보 
     	}
     }catch(Exception e) {
 		  System.out.println("에러:"+e.getMessage());
@@ -280,8 +281,15 @@ public void updateHit(int num) {
 public void updateBoard(BoardDTO board) {
 	Connection conn=null;
     PreparedStatement pstmt=null;
+    String sql="";
     
-    String sql="update board set id=?,name=?,subject=?,content=?, regist_day=?,ip=?  where num=?";
+    if(board.getAttachFile()==null) {//첨부파일이 전송되지 않은 경우
+    	sql="update board set id=?,name=?,subject=?,content=?, "
+    			 + " regist_day=?,ip=?  where num=?";	
+    }else {//첨부파일 전송된 경우
+    	sql="update board set id=?,name=?,subject=?,content=?, "
+    			 + " regist_day=?,ip=?, attachFile=?  where num=?";
+    }
     System.out.println("sql:"+sql);
    
     try {
@@ -295,7 +303,12 @@ public void updateBoard(BoardDTO board) {
     	 pstmt.setString(4, board.getContent());
     	 pstmt.setString(5, board.getRegist_day());
     	 pstmt.setString(6, board.getIp());
-    	 pstmt.setInt(7, board.getNum());
+    	 if(board.getAttachFile()==null) {
+    	     pstmt.setInt(7, board.getNum());
+    	 }else {
+    		 pstmt.setString(7,board.getAttachFile());
+    		 pstmt.setInt(8, board.getNum());
+    	 }
     	 //update처리
     	 pstmt.executeUpdate();
     }catch(Exception e) {
