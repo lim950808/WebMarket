@@ -11,6 +11,15 @@ public class BbsWriteForm implements ActionCommand {
     	
 		 //로그인 후 게시글 등록 페이지로 이동했는지, 로그인 한 작성자 이름 얻기
 	       requestLoginName(request); 
+	       
+	       request.setAttribute("pageNum",request.getParameter("pageNum"));
+		   request.setAttribute("items",request.getParameter("items"));
+		   request.setAttribute("text",request.getParameter("text"));
+		   request.setAttribute("num",request.getParameter("num"));
+		   request.setAttribute("ref",request.getParameter("ref"));
+		   request.setAttribute("re_step",request.getParameter("re_step"));
+		   request.setAttribute("re_level",request.getParameter("re_level"));
+		    
 		return "./bbs/writeForm.jsp";
 	}
 	

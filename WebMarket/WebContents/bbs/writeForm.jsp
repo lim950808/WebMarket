@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html><html><head>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"/>
 <meta charset="UTF-8">
 <title>Bbs</title>
 </head>
@@ -17,6 +18,13 @@
       method="post" 
       onsubmit="return checkForm()">
       <input name="id" type="hidden" class="form-control" value="${sessionId}">
+      <input name="pageNum" type="hidden" value="${pageNum}">
+      <input name="items" type="hidden" value="${items}">
+      <input name="text" type="hidden" value="${text}">
+      <input name="ref" type="hidden" value="${ref}">
+      <input name="re_step" type="hidden" value="${re_step}">
+      <input name="re_level" type="hidden" value="${re_level}">
+      
       <div class="form-group row">
         <label class="col-sm-2 control-label">작성자</label>
         <div class="col-sm-3">
@@ -28,8 +36,12 @@
       <div class="form-group row">
         <label class="col-sm-2 control-label">제목</label>
         <div class="col-sm-5">
-           <input name="subject" class="form-control" placeholder="subject">
-        </div>
+           <input name="subject" class="form-control" placeholder="subject" 
+           <c:if test='${num!=null}'>
+             value="답변 :"
+           </c:if>
+           >
+         </div>
       </div>
       
       <div class="form-group row">

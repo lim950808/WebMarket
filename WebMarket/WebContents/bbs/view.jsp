@@ -56,6 +56,8 @@ function confirmDelete(num,pageNum,items,text){
         	</button>
              <input type="submit" class="btn btn-success" value="수정">
             <a href="./BbsListAction.go?pageNum=${page}&items=${items}&text=${text}" class="btn btn-primary">목록</a>
+            <a href="./BbsReplyForm.go?id=${sessionId}&pageNum=${page}&items=${items}&text=${text}&num=${bbs.num}&ref=${bbs.ref}&re_step=${bbs.re_step}&re_level=${bbs.re_level}" 
+            class="btn btn-warning">답변</a>
         </div>
     </div>
     </form>
