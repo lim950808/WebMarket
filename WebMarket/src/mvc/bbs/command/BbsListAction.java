@@ -39,7 +39,12 @@ public class BbsListAction implements ActionCommand {
 		//int total_record = dao.getListCount();
 		int total_record = dao.getBbsCount(pageNum, limit, items, text);
 		
-		//전체 글 갯수 얻기
+		//전체 글의 첫번째 번호
+		int firstNum=dao.getFirstNum();
+		int lastNum=dao.getLastNum();
+		
+		
+		//전체 글 갯수 얻기1
 		int total_page;
 		
 		//페이징처리
@@ -73,6 +78,10 @@ public class BbsListAction implements ActionCommand {
 		request.setAttribute("finalPage",finalPage);
 		request.setAttribute("items", items);
 		request.setAttribute("text", text);
+		//전체 글 중 첫번째, 마지막 글 번호
+		request.setAttribute("firstNum", firstNum);
+		request.setAttribute("lastNum", lastNum);
+		
 		//이동할 페이지
 		return "./bbs/list.jsp";
 	}

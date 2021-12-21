@@ -21,14 +21,19 @@ function confirmDelete(num,pageNum,items,text){
      <h1 class="display-3">게시판</h1>
    </div>
 </div>
-
+${bbs.ref}
+${bbs.re_step}
+${bbs.re_level}
 <div class="container">
     <form name="newUpdate" 
           action="BbsUpdateAction.go?num=${bbs.num}&pageNum=${page}&items=${items}&text=${text}"
           class="form-horizontal" 
           method="post"
-          enctype="multipart/form-data" >
+          >
          <input type="hidden" name="id" value="${sessionId}"><!-- request->session->application순으로 조회 -->
+         <input name="ref" type="hidden" value="${bbs.ref}">
+         <input name="re_step" type="hidden" value="${bbs.re_step}">
+         <input name="re_level" type="hidden" value="${bbs.re_level}">
     <div class="form-group row">
         <label class="col-sm-2 control-label">작성자</label>
         <div class="col-sm-3">
@@ -61,6 +66,17 @@ function confirmDelete(num,pageNum,items,text){
         </div>
     </div>
     </form>
+    <div>이전글:
+      <c:if test="${firstNum!=bbs.num}">
+      <a href="./BbsViewAction.go?firstNum=${firstNum}&lastNum=${lastNum}&num=${bbs.num-1}&pageNum=${page}&items=${items}&text=${text}">${bbs.num-1}</a>
+      </c:if>
+    </div>
+    <div>다음글:
+	 <c:if test="${lastNum!=bbs.num}">
+	  <a href="./BbsViewAction.go?firstNum=${firstNum}&lastNum=${lastNum}&num=${bbs.num+1}&pageNum=${page}&items=${items}&text=${text}">${bbs.num+1}</a>
+	 </c:if>
+	 	
+	</div>
     <hr>
 </div>
 <jsp:include page="../footer.jsp"/>

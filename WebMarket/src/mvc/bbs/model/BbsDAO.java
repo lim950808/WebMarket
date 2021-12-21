@@ -260,6 +260,32 @@ public class BbsDAO {
 	 return count;
  }//getBbsCount() 끝.
 
+//글 조회수 증가 처리
+public void updateBbsReadcount(int num) {
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	
+	String sql = "update bbs set readcount=readcount+1 where num=?";
+	
+	try { //조회수 증가 처리
+		conn = DBConnectionOracle.getConnection();	
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1,num );
+			//update처리
+			pstmt.executeUpdate();
+ }catch(Exception e){
+	  System.out.println("에러:"+e);
+  }finally {
+	  try {
+		    if(pstmt!=null) pstmt.close();
+		    if(conn!=null)conn.close();
+	  }catch(Exception e) {
+		  throw new RuntimeException(e.getMessage());
+	  }
+  } 
+}//updateBbsReadcount() 끝.
+ 
+ 
  //글번호에 해당하는 Bbs정보 얻기
  public BbsDTO getBbsByNum(int num,int pageNum) {
   BbsDTO bbs =null;
@@ -270,7 +296,10 @@ public class BbsDAO {
   String sql="select * from bbs where num=?";
  
   System.out.println("sql:"+sql);
-
+  
+  //조회수 증가 처리
+   updateBbsReadcount(num);
+   
 		try {
 			//1.OracleDB 연결객체 생성
 			conn = DBConnectionOracle.getConnection();
@@ -305,4 +334,127 @@ public class BbsDAO {
   } 
   return bbs;
  }//getBbsByNum() 끝.
+ 
+public int getFirstNum() {
+	 int minNum =0;
+	 Connection conn=null;
+	  PreparedStatement pstmt=null;
+	  ResultSet rs=null;
+	 
+	  String sql="select nvl(min(num),0) from bbs ";	
+	try {
+		 //1.OracleDB 연결객체 생성
+		 conn = DBConnectionOracle.getConnection();
+		 pstmt = conn.prepareStatement(sql);
+		 rs = pstmt.executeQuery();
+		 if(rs.next()) minNum = rs.getInt(1);
+	   }catch(Exception e) {
+		  System.out.println("에러:"+e);
+	  }finally {
+		  try {
+			    if(rs!=null) rs.close(); if(pstmt!=null) pstmt.close();
+			    if(conn!=null)conn.close();
+		  }catch(Exception e) {
+			  throw new RuntimeException(e.getMessage());
+		  }
+	  } 
+	return minNum;
+}//getFirstNum() 끝.
+
+public int getLastNum() {
+	 int maxNum =0;
+	 Connection conn=null;
+	  PreparedStatement pstmt=null;
+	  ResultSet rs=null;
+	 
+	  String sql="select nvl(max(num),0) from bbs ";	
+	try {
+		 //1.OracleDB 연결객체 생성
+		 conn = DBConnectionOracle.getConnection();
+		 pstmt = conn.prepareStatement(sql);
+		 rs = pstmt.executeQuery();
+		 if(rs.next()) maxNum = rs.getInt(1);
+	   }catch(Exception e) {
+		  System.out.println("에러:"+e);
+	  }finally {
+		  try {
+			    if(rs!=null) rs.close(); if(pstmt!=null) pstmt.close();
+			    if(conn!=null)conn.close();
+		  }catch(Exception e) {
+			  throw new RuntimeException(e.getMessage());
+		  }
+	  } 
+	return maxNum;
+ }//getLastNum() 끝.
+
+//Bbs 수정 처리
+public void updateBbs(BbsDTO bbs) {
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	
+	String sql = "update bbs set writer=?,subject=?,content=?,ip=? where num=?";			
+	
+	
+	try { //신규글 등록 처리
+		conn = DBConnectionOracle.getConnection();
+		
+			//댓글 입력 처리
+			pstmt = conn.prepareStatement(sql);
+			System.out.println("sql:"+sql);
+			
+			pstmt.setString(1, bbs.getWriter());
+			pstmt.setString(2, bbs.getSubject());
+			pstmt.setString(3, bbs.getContent());
+			pstmt.setString(4, bbs.getIp());
+            pstmt.setInt(5, bbs.getNum());			
+			//update처리
+			pstmt.executeUpdate();
+			
+ }catch(Exception e){
+	  System.out.println("에러:"+e);
+  }finally {
+	  try {
+		    if(pstmt!=null) pstmt.close();
+		    if(conn!=null)conn.close();
+	  }catch(Exception e) {
+		  throw new RuntimeException(e.getMessage());
+	  }
+  } 	
+ }//updateBbs() 끝.
+
+//Bbs 삭제 처리
+public void deleteBbs(int num) {
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs=null;
+	
+	String replyCountSql="select count(*) from bbs where ref=? and re_step >0";
+	String sql = "delete from  bbs where num=?";			
+	
+	try { //삭제 처리
+		conn = DBConnectionOracle.getConnection();
+		
+		System.out.println("sql:"+sql);
+			//댓글 존재 여부확인
+			pstmt = conn.prepareStatement(replyCountSql);
+			pstmt.setInt(1, num);
+			rs = pstmt.executeQuery();
+            int replyCount=0;
+			if(rs.next()) replyCount = rs.getInt(1);
+			if(replyCount ==0 ) { //댓글이 없는 글들만 삭제
+				pstmt = conn.prepareStatement(sql);
+				pstmt.setInt(1, num);			
+                pstmt.executeUpdate();
+			}
+}catch(Exception e){
+	  System.out.println("에러:"+e);
+}finally {
+	  try {
+		    if(pstmt!=null) pstmt.close();
+		    if(conn!=null)conn.close();
+	  }catch(Exception e) {
+		  throw new RuntimeException(e.getMessage());
+	  }
+ } 	
+}//updateBbs() 끝.
 }
