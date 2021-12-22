@@ -143,19 +143,48 @@ public class BbsDAO {
 	  
 		  if((items==null && text==null)||( items.length()==0 || text.length()==0)) {//검색 조건이 파라미터로 넘어오지 않은 경우
 				sql = "select * "
-				    + " from "
-					+ "(select rownum rn, a.* from "
-					+ " (select * "
-					+ "    from bbs "
-					+ "    order by ref desc, re_step asc)a ) "
-					+ "where rn between ? and ? ";	
+				    + "  from  "
+				    + "(select rownum rn, a.* from "
+				    + " (select bbs.num num, "
+				    + "       bbs.writer writer, "
+				    + "       bbs.subject subject, "
+				    + "       bbs.content content, "
+				    + "       bbs.readcount readcount, "
+				    + "       bbs.password password, "
+				    + "       bbs.reg_date reg_date, "
+				    + "       bbs.ip ip, "
+				    + "       bbs.ref ref, "
+				    + "       bbs.re_step re_step, "
+				    + "       bbs.re_level re_level, "
+				    + "       nvl(bbsgoodbad.good,0) good, "
+				    + "       nvl(bbsgoodbad.bad,0) bad "
+				    + "  from bbs, bbsgoodbad "
+				    + " where bbs.num=bbsgoodbad.num(+) "
+				    + " order by ref desc, re_step asc)a ) "
+				    + " where rn between ? and ? "
+				    ;
+				
 			}else { //검색 조건이 파라미터로 넘어온 경우 
-				sql = "select * from "
-					+ " (select rownum rn, a.* from "
-					+ "  (select * "	
-					+ "     from bbs "
-					+ "    where "+items+" like '%'||?||'%' " //|| : 결합 연산자
-					+ "    order by ref desc, re_step asc) a) "
+				sql = "select * "
+					+ "   from "
+					+ "	(select rownum rn, a.* from "
+					+ "	  (select  bbs.num num,"
+					+ "		       bbs.writer writer,"
+					+ "		       bbs.subject subject,"
+					+ "		       bbs.content content,"
+					+ "		       bbs.readcount readcount,"
+					+ "		       bbs.password password,"
+					+ "		       bbs.reg_date reg_date,"
+					+ "		       bbs.ip ip,"
+					+ "		       bbs.ref ref,"
+					+ "		       bbs.re_step re_step,"
+					+ "		       bbs.re_level re_level,"
+					+ "		       nvl(bbsgoodbad.good,0) good,"
+					+ "		       nvl(bbsgoodbad.bad,0) bad 	"
+					+ "		 from bbs, bbsgoodbad"
+					+ "	    where subject like '%'||?||'%'"
+					+ "	      and bbs.num = bbsgoodbad.num(+) "
+					+ "	    order by ref desc, re_step asc) a) "
 					+ " where rn between ? and ?";
 			 }
 			System.out.println("sql:"+sql);
@@ -195,6 +224,9 @@ public class BbsDAO {
 					bbs.setRef(rs.getInt(10));
 					bbs.setRe_step(rs.getInt(11));
 					bbs.setRe_level(rs.getInt(12));
+					//좋아요, 싫어요 추가
+					bbs.setGood(rs.getInt(13));
+					bbs.setBad(rs.getInt(14));
                    
 					//리스트에 추가
 					bbslist.add(bbs);
@@ -298,7 +330,7 @@ public void updateBbsReadcount(int num) {
   System.out.println("sql:"+sql);
   
   //조회수 증가 처리
-   updateBbsReadcount(num);
+  // updateBbsReadcount(num);
    
 		try {
 			//1.OracleDB 연결객체 생성
@@ -457,4 +489,90 @@ public void deleteBbs(int num) {
 	  }
  } 	
 }//updateBbs() 끝.
+
+public void insertUpdateBbsGoodBad(BbsGoodBadDTO bbsGoodBad) {
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs=null;
+	
+	String sql = "select count(*) from bbsgoodbad where num=?";//rs.next() =true, 0, > 0
+	String insertSql = "insert into bbsgoodbad values(?,?,?)";
+	String updateSql = "update bbsgoodbad set good=good+?,bad=bad+? where num=?";
+	int count=0;
+	try { //신규글 등록 처리
+		conn = DBConnectionOracle.getConnection();
+		pstmt = conn.prepareStatement(sql);
+		pstmt.setInt(1, bbsGoodBad.getNum());
+		
+		rs = pstmt.executeQuery();
+	    if(rs.next()) {
+	       count = rs.getInt(1);
+	    }
+	    rs.close();
+	    if(count==0){//입력
+	    		pstmt = conn.prepareStatement(insertSql);
+	    		pstmt.setInt(1, bbsGoodBad.getNum());
+	    		pstmt.setInt(2, bbsGoodBad.getGood());
+	    		pstmt.setInt(3, bbsGoodBad.getBad());
+	    		pstmt.executeUpdate();
+	    }else {//수정
+	    		System.out.println("y");
+	    		pstmt = conn.prepareStatement(updateSql);
+	    		pstmt.setInt(1, bbsGoodBad.getGood());
+	    		pstmt.setInt(2, bbsGoodBad.getBad());
+	    		pstmt.setInt(3, bbsGoodBad.getNum());
+	    		pstmt.executeUpdate();	
+	    	}
+ }catch(Exception e){
+	  System.out.println("에러:"+e);
+	  e.printStackTrace();
+  }finally {
+	  try {
+		    if(rs!=null) rs.close();
+		    if(pstmt!=null) pstmt.close();
+		    if(conn!=null)conn.close();
+	  }catch(Exception e) {
+		  throw new RuntimeException(e.getMessage());
+	  }
+   } 
+ }//insertUpdateBbsGoodBad() 끝.
+
+public BbsGoodBadDTO getBbsGoodBadByNum(int num) {
+	BbsGoodBadDTO goodBad =null;
+	Connection conn = null;
+	PreparedStatement pstmt = null;
+	ResultSet rs=null;
+	
+	String sql = "select * from bbsgoodbad where num=?";
+	System.out.println("z");
+	
+	try { //신규글 등록 처리
+		conn = DBConnectionOracle.getConnection();
+		pstmt = conn.prepareStatement(sql);
+	    pstmt.setInt(1, num);	
+		
+		rs = pstmt.executeQuery();
+	    if(rs.next()) {
+	    	System.out.println("z");
+	    	goodBad = new BbsGoodBadDTO();
+	    	goodBad.setNum(num);
+            goodBad.setGood(rs.getInt(2));
+            goodBad.setBad(rs.getInt(3));
+	    }
+    }catch(Exception e){
+	  System.out.println("에러:"+e);
+	  e.printStackTrace();
+  }finally {
+	  try {
+		    if(rs!=null) rs.close();
+		    if(pstmt!=null) pstmt.close();
+		    if(conn!=null)conn.close();
+	  }catch(Exception e) {
+		  throw new RuntimeException(e.getMessage());
+	  }
+   } 
+	return goodBad;
+}//getBbsGoodBadByNum() 끝.
+
+
 }

@@ -22,12 +22,3 @@ select * from bbs order by num desc;
 
 insert into bbs(num,writer,subject,content, password,ip,ref,re_step,re_level)
 select bbs_seq.nextval,writer,subject,content,password,ip,bbs_seq.currval,0,0 from bbs;
-
-
-select *
-  from 
-(select rownum rn, a.* from
- (select * 
-    from bbs  
-    order by ref desc, re_step asc)a )
-where rn between 11 and 20 ;
