@@ -10,6 +10,10 @@
 <%-- <jsp:useBean id="productDAO" class="dao.ProductRepository" scope="session"/> --%>
 <%-- <% ProductRepository productDAO = ProductRepository.getInstance(); %> --%>
 <%@ include file="dbconn.jsp" %>
+<% request.setAttribute("rate", 5.0);%>
+<% double rate =(Double)request.getAttribute("rate");%>
+<%=rate %><br>
+
 <%
 String id = request.getParameter("id");
  System.out.println("p_id:"+id);
@@ -17,7 +21,7 @@ String sql="select * from product where p_id=?";
 PreparedStatement pstmt = conn.prepareStatement(sql);
 pstmt.setString(1,id);
 ResultSet rs=pstmt.executeQuery();
-Product product = null;
+Product product =null;
 if(rs.next()){
    product=new Product(id, rs.getString("p_name"), rs.getInt("p_unitPrice"));        	
 }
@@ -61,6 +65,9 @@ $(document).ready(function(){
 	$(".star_rating a").click(function(){
 		$(this).parent().children("a").removeClass("on");
 		$(this).addClass("on").prevAll("a").addClass("on");
+		$rate =$(".on").length;
+		$("#rate").val($rate);
+		alert($rate);
 		return false;
 	});
 });
@@ -93,13 +100,13 @@ function addToCart(){
 <div class="container">
   <div class="row">
      <div class="col-md-5">
-        <img src="/resources/upload/<%=rs.getString("p_fileName")%>" style="width:100%">
+        <img src="/resources/images/<%=rs.getString("p_fileName")%>" style="width:100%">
      </div>
      <div class="col-md-6">
         <p class='star_rating' >
          <% 
              for(int i=1;i<=5;i++){
-            	if(i<=4)
+            	if(i<=rate)
             	 out.print("<a href='#' class='on'>★</a>");
             	else
             	 out.print("<a href='#' >★</a>");
@@ -115,6 +122,7 @@ function addToCart(){
        <h4><%=rs.getInt("p_unitPrice") %>원</h4>
        <p><form name="addForm" action="./addCart.jsp?id=<%=id%>" method="post">
           <div class="col-md-2">
+          <input type="hidden" name="rate"  id="rate" value="<%=rate%>">
           <input type="number" name="qty" value="0" class="form-control input-md">
           </div>
           <a href="#" class="btn btn-info" onclick="addToCart()">상품주문 &raquo;</a>
